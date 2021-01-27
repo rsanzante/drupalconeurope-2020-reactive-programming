@@ -1,0 +1,212 @@
+.reveal section img.dcon2020-logo {
+  max-width: 200px;
+}
+
+.reveal section .alt-color {
+  color: #e22b4b !important;
+}
+
+.reveal section .alt-color2 {
+  color: #08547a !important;
+}
+
+.reveal section img.md-logo {
+  max-width: 200px;
+  margin: 0px;
+}
+
+.reveal section .small {
+  font-size: 0.8em;
+}
+.reveal section .xsmall {
+  font-size: 0.6em;
+}
+
+.reveal section .xxsmall {
+  font-size: 0.4em;
+}
+
+.reveal section .header {
+  color: #08547a;
+  font-size: 1.8em;
+}
+
+.reveal section code span.old {
+  opacity: 0.35 !important;
+}
+
+.reveal section.fframe .header {
+  color: #fff;
+}
+
+.reveal section.fframe {
+  color: #fff;
+}
+
+.reveal section .subheader {
+  font-size: 0.8em;
+}
+
+.reveal section .subsubheader {
+  font-size: 0.7em;
+  margin-top: -0.4em;
+}
+
+.reveal section .author {
+  margin-bottom: 0.2em;
+}
+
+.reveal section .nicks {
+  margin-bottom: 0.2em;
+}
+
+
+li {
+    background: url('../images/DCE2020_bullet.png') no-repeat 7px 7px transparent;
+    list-style-type: none;
+    margin: 0;
+    padding: 0px 0px 1px 60px;
+    vertical-align: middle;
+}
+
+.reveal section pre {
+  width: 100%;
+  box-shadow: 0px 0px 0px 0px;
+  margin: -20px auto;
+  font-size: 0.65em;
+}
+
+.reveal section code {
+  max-height: 580px;
+}
+
+
+.reveal section .wrap-ovl {
+    color: #eee;
+    background: rgba(14, 14, 14, 0.5);
+    text-align: center;
+    padding: 1em;
+}
+
+/*  */
+a.ddlink {
+  color: #000;
+}
+
+.wrap-ovl a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.reveal section img {
+  border: 1px solid #aaa;
+  box-shadow: 2px 2px 5px #aaa;
+}
+
+.reveal section img.logo {
+  border: 0;
+  box-shadow: 0 0;
+}
+
+.reveal section img.profile-photo {
+  max-width: 120px;
+  border-radius: 50%;
+  border: 7px solid #35107e;
+}
+
+.reveal section img.metadrop-logo {
+  max-width: 200px;
+}
+
+
+.sponsor {
+  width: 100%;
+  color: #08547a;
+  background-color: transparent;
+  z-index: 10;
+  transition: all .8s cubic-bezier(.26,.86,.44,.985);
+}
+
+.sponsor-hidden .sponsor {
+  opacity: 0%;
+  transition: all .8s cubic-bezier(.26,.86,.44,.985);
+}
+
+.sponsor-hidden.first-slide .sponsor {
+  transition: none;
+}
+
+.sponsor.up {
+  position: absolute;
+  top: 0;
+  left: -0;
+}
+
+.sponsor.dow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.sponsor img {
+    position: relative;
+    top: 2px;
+    width: 150px;
+    float: left;
+}
+
+.sponsor span {
+  line-height: 100px;
+  height: 40px;
+  float: right;
+  display: block;
+  font-weight: bold;
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  margin-right: 2em;
+}
+
+.sponsor a,
+.sponsor a:hover,
+.sponsor a:visited {
+  color: blue;
+  text-decoration: red;
+}
+
+.reveal section .spacer {
+  height: 100px;
+}
+
+.reveal section .spacer-small {
+  height: 80px;
+}
+
+.reveal section .session-title {
+  font-size: 1.1em;
+}
+
+
+.bottom {
+  position: relative;
+  bottom: -60px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+}
+
+.double-column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 2;
+}

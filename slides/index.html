@@ -1,0 +1,967 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Reactive Programming: Dealing with Asynchronicity | Drupal Con Europe 2020</title>
+
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/white.css" id="theme">
+    <link rel="stylesheet" href="assets/css/custom.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+  </head>
+  <body>
+    <div class="sponsor up">
+      <a href="https://events.drupal.org/europe2020"><img src="assets/images/DCE2020_logo_horizontal.png" class="dcon2020-logo" /></a>
+    </div>
+
+    <div class="reveal">
+      <div class="slides">
+
+        <section data-state="sponsor-hidden first-slide" data-background-image="assets/images/DCE2020_general_background.png">
+          <div>
+            <a href="https://events.drupal.org/europe2020"><img src="assets/images/DCE2020_logo_vertical.png" class="dcon2020-logo logo" /></a>
+          </div>
+          <div>
+            <div class="header">Reactive Programming: Dealing with Asynchronicity</div>
+            <div class="spacer"></div>
+            <div class="subheader author"> Ricardo Sanz</div>
+          </div>
+        </section>
+
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_general_background.png">
+            <img src="assets/images/sanzante.jpg" class="profile-photo">
+            <p>
+              <span>Ricardo Sanz</span>
+              <br>
+              <span class="xsmall"><em>Drupal Developer &amp; DevOps</em></span>
+              <br>
+              <a class="xsmall" href="https://drupal.org/u/tunic" target="_blank">drupal.org/u/tunic</a>
+              <br>
+              <a class="xsmall" href="https://twitter.com/sanzante" target="_blank">sanzante @ Twitter</a>
+            </p>
+            <img src="assets/images/metadrop-logo.svg" class="metadrop-logo logo">
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Walktrough</span>
+          </div>
+          <ul class="walktrough">
+            <li>Intro.</li>
+            <li>Approaches to deal with asynchronicity.</li>
+            <li>Reactive Programming.</li>
+            <li>Plumbing!</li>
+            <li>Observables.</li>
+            <li>Operators.</li>
+            <li>Code examples.</li>
+            <li>Final notes.</li>
+          </ul>
+        </section>
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background.jpg" class="fframe">
+          <div class="header">
+            <span>Introduction</span>
+          </div>
+          <aside class="notes">
+           <b>A very quick intro about Reactive Programming</b>
+          </aside>
+
+        </section>
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Reactive Programming</span>
+          </div>
+          <ul>
+            <li>A way to manage asynchronicity.</li>
+            <li>Based on the ReactiveX library.</li>
+            <li>Observer pattern, Iterator pattern and functional programming.</li>
+            <li>Available in many languages: JavaScript, PHP, Java, Scala, Go, Kotlin, Swift, C#, C++, Pyhton and others.</li>
+          </ul>
+          <aside class="notes">
+            Reactive Programming is a way to deal with asynchronicity based on the Observer pattern. This talk is based on the ReactiveX library, the JavaScript version. In their words: "ReactiveX is a combination of the best ideas from the Observer pattern, the Iterator pattern, and functional programming". The ReactiveX libray can be used on many different languages, from the webserver to the backend, including native applications as well.
+
+            <strong>Ok, but what is an asychronous environment?</strong>
+          </aside>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Asynchronicity</span>
+          </div>
+          <ul>
+            <li>The browser environment is asynchronous.</li>
+            <li>Unpredictable events over time.</li>
+            <li>AJAX.</li>
+            <li>User interaction (mouse, keyboard, etc).</li>
+            <li>Timers or animations</li>
+            <li>WebSockets.</li>
+            <li>Workers.</li>
+          </ul>
+          <aside class="notes">
+              An asyncrhonous environment is an environment with events that happen over time that we can't predict. This is very common in the browser because it's an asynchronous environment. If we check a Drupal request we find that the exeuction path is more or less predictible (complex but predictible), and data is available when needed (when a database query is done we asume that result, success or failure, is available in the next line of code, the same for reading a file). In the browser this is not true. We don't know when many operations will return their data: AJAX operations are the main example, but it's the same for workers, user interactions, WebSockets, timers and animations. Allof them  are sources of asynchronicity
+            <br>
+            <br>
+            <strong>How we can manage this uncertainty, this asynchronicity?</strong>
+
+          </aside>
+        </section>
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background.jpg" class="fframe">
+          <div class="header">
+            <span>Dealing with asynchronicity</span>
+          </div>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Callbacks</span>
+          </div>
+          <ul>
+            <li>Simple reaction to an event.</li>
+            <li>
+             Function call (listeners).
+             <pre>
+               <code data-trim>
+jQuery('#grip').click(function() {
+  jQuery('#panel').slideUp();
+});
+               </code>
+             </pre>
+          </li>
+           <li>Coding complex reactions is hard.</li>
+           <li><i>Callback hell</i>.</li>
+          </ul>
+          <aside class="notes">
+            The first approach are callbacks.
+            <ul>
+              <li>This is a simple and classic approach.</li>
+              <li>When an event is received a function is called. This function process the event and its data. Example: listeners</li>
+              <li>Becasue of their simplicity they don't allow many possibilities. Only recommended for simple reactions upon events becasue coding complex reactions is hard.</li>
+              <li>Things start to get complicated when within a callback you need more actions to process the response that require more callbacks. This usually leads to a callback hell</li>
+            </ul>
+          </aside>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Callback hell</span>
+          </div>
+            <pre>
+              <code data-trim>
+var doc;
+memStorage.get(docId, response => {
+doc = memResponse;
+  if (!memResponse) {
+    localStorage.get(docId, localResponse => {
+      doc = localResponse;
+      if (!localResponse) {
+        serverStorage.get(docId, serverResponse => {
+          doc = serverResponse;
+          if (!serverResponse) {
+            // Error.
+          }
+      });
+    }
+  });
+});
+              </code>
+            </pre>
+          <aside class="notes">
+            <ul>
+              <li>A callback hell is a nested code in multiple levels because of successive callbacks.</li>
+              <li>This code is not easy to read, is not clean and is not elegant.</li>
+            </ul>
+            <br>
+            <br>
+            <strong>What was the way to solve the callbacks issues? Promises.</strong>
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Promises</span>
+          </div>
+          <ul>
+          <li>Objects that wrap asynchronous operations and react when there is a result.</li>
+          <li>They're chainable.</li>
+          <li>They greatly improve flow and error management.</li>
+          <li>Added to ES2015 (ECMAScript 6).</li>
+          </ul>
+          <aside class="notes">
+            <ul>
+              <li><em>Objects that wrap asynchronous operations and react when there is a result </em>, whether it is a failure or a success</li>
+              <li><em>They are chainable.</em></li>
+              <li><em>and they are chainable.</em></li>
+            </ul>
+            <br>
+            <br>
+            <strong>They are a big improvement, but they have certain limitations.</strong>
+          <aside>
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Promises</span>
+          </div>
+          <ul>
+            <li>They are resolved only once: they return a single value.</li>
+            <li>Following the execution flow may not be trivial.</li>
+            <li>They are not lazy.</li>
+            <li>They are not cancellable.</li>
+            <li>Promise hell.</li>
+          </ul>
+          <aside class="notes">
+          <ul>
+            <li>... so if you want to repeat an action you must run again the code that set ups the promise. Usually you can do it calling again the function that manages this, so it's not a big deal.. But you'll need to control this re-execution process.<br>
+            This works well for one-shot actions (even complex ones) but it could be a problem when it comes to actions that are repeated over time or with sliglhtly different behaviors. Once the promise has been fullfilled no longer returns values. [[[ Get more info about this here: <a href="https://medium.com/@mpodlasin/promises-vs-observables-4c123c51fe13">Promises vs Observables</a>, by Mateusz Podlasin ]]].</li>
+            <li>There many articles explaining that you need to understand Promises quite well to avoid rookie and advanced user mistakes.. [[[ See article by Nolan Lawson, PouchDB core team developer: <a href="https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html">We have a problem with promises</a> ]]]</li>
+            <li>As the promise is created the code that tries to solve it is executed as soon as possible. It is assumed that the answer is needed now.</li>
+            <li>Except using some libraries like Bluebird, once the promise is created it will try to resolve or fail, but it cannot be cancelled (although it can be ignored, of course). This can result in wasted resources.</li>
+            <li>To be fair, this may happen when Promises are not used the right way.</li>
+            Ah, I'm not forgeting async/await, but at the end it is just a syntax to work with promises in a more comfortable fashion, so they have the same issues.
+          </ul>
+          <br>
+          <br>
+          <strong>Although they are a great improvement over callbacks, the following strategy is even more powerful.</strong>
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Reactive programming</span>
+          </div>
+          <ul>
+            <li>Programming with asynchronous data streams.</li>
+            <li>Use of data pipes that process and alter data.</li>
+            <li>Declaration of reactions to changes.</li>
+            <li>Similar example: how Angular, React and Vue.js update user interface on data change.</li>
+          </ul>
+         <aside class="notes">
+          <span>So, what is Reactive Programming?.</span>
+          <br>
+          <br>
+          ...
+          <br>
+          <br>
+          When a variable is updated the value is automatically updated in the user interface.
+          <br>
+          <br>
+          <br>
+          <strong>Waht are the advantages?</strong>
+          </aside>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Advantages</span>
+          </div>
+          <ul>
+            <li>It greatly simplifies asynchronous working.</li>
+            <li>Very easy to combine and manage asynchronous data sources.</li>
+            <li>Generates a shorter, simpler and more intuitive code<sup>*</sup>.</li>
+            <li>Maintainability.</li>
+          </ul>
+          <aside class="notes">
+            <ul>
+              <li>...working because it makes asynchronous workflows easy to describe.</li>
+              <li>...</li>
+              <li>The asterisk is there because while the sentence is true, you have to 'deprogram' yourself a little bit from the structured, object-oriented programming paradigm to read the code.</li>
+              <li>Maintainability.</li>
+            </ul>
+            <strong>Let's see how to deal with asynchronicity using Reactive Programming.</strong>
+          </aside>
+        </section>
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background_no_drop.jpg" class="fframe">
+          <div class="header">
+            <span>Plumbing!</span>
+          </div>
+          <img style="width: 600px" src="assets/images/pipeall.jpg">
+          <!-- Image from https://blog.hackages.io/rxjs-5-5-piping-all-the-things-9d469d1b3f44 -->
+          <aside class="notes">
+            <strong>Reactive Programming is all about plumbing!</strong>
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Plumbing!</span>
+          </div>
+          <ul>
+            <li>Is about creating data pipes.</li>
+            <li>Asynchronous data sources are piped.</li>
+            <li>The pipes transform the data.</li>
+            <li>The pipes are modulated.</li>
+            <li>When data reaches the end of the pipe a reaction is triggered.</li>
+          </ul>
+          <aside class="notes">
+            <ul>
+              <li><em>Is about creating data pipe</em> becasue in Reactive Programming you create pipes for the data, creating a plumbing system that solves your needs.</li>
+              <li><em>Asynchronous data sources are piped</em> into our plumbing system.</li>
+              <li>This plumbing system is abel to transform the data and modulate the paths the data crosses.</li>
+              <li>...</li>
+              <li><em>When data reaches the end of the pipe a reaction is triggered.</em></li>
+            </ul>
+            <br>
+            <br>
+            <br>
+            <strong>Ok, what would be a simple pipe?</strong>
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Simple pipe</span>
+          </div>
+          <div>
+            <span>Example: Click event listener (using callback approach).</span>
+            <pre>
+              <code data-trim>
+jQuery('#grip').click(function() {
+  jQuery('#panel').slideUp();
+});
+              </code>
+            </pre>
+            <img  src="assets/images/camino_simple2_en.png">
+          </div>
+          <aside class="notes">
+          This is an example of a very simple data pipe, the simplest of all. An event is generated in the browser, which is captured and the appropriate action is taken, in this case showing an element of the DOM. There we see a flow of data that goes from the broadcast of the event to its reception in the listener. Nothing mysterious, we do it every day.
+          <br>
+          <br>
+          <strong>What would be a complex pipe?</strong>
+
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Complex pipe</span>
+          </div>
+          <img src="assets/images/camino_transformaciones_en.png">
+
+          <div>
+           <span>Example: From a click to an AJAX request, and then to a instantiated object list.
+           <img src="assets/images/camino_transformaciones_ejemplo_en.png">
+          </div>
+          <aside class="notes">
+          Pipes with transformations are the interesting ones. For example, the transition from one click to a list of objects loaded from a service. In this case, at some point the user clicks a button. This click becomes a URL of an endpoint of remote service, for example, a competition's classification data: athletes, score, nationality, name, etc. That URL then becomes the data contained in that URL, which will be a JSON. On the next step the JSON content is turned into instances of a custom class that contains the data received. Lastly, the final action occurs, which is to assign these objects to an internal variable. <br>
+
+          So, the initial data, a click, has travelled a pipe that has been transforming that data, until the final action, that's the assignment to a variable. This is nothing new, it's done all the time using callbacks or promises. We could chain the output of one call to another, and deal with the complexity that is produced. The good thing of Reactive Programming is how easy is to define this data management.
+          <br>
+          <br>
+
+          <strong>Breath pause!</strong>
+          </aside>
+        </section>
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background.jpg" class="fframe">
+          <div class="header">
+            <span>Breath pause</span>
+            <br>
+            <img src="assets/images/breath.gif">
+          </div>
+          <aside class="notes">
+            <strong>Well, now we have to take a deep breath to get into the thick part of the talk. How do we create these data pipes? How we build our plumbing system? How do we declare the reactions to change?</strong>
+          </aside>
+        </section>
+
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background.jpg" class="fframe">
+          <div class="header">
+            <span>Observables and Operators</span>
+          </div>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Observables/Streams</span>
+          </div>
+          <ul>
+            <li>Observables from Observer pattern.</li>
+            <li>Data streams.</li>
+            <li>They emit data until they finish or an error is triggered.</li>
+          </ul>
+        <aside class="notes">
+            First main piece: Observables
+            <br>
+            <br>
+            <ul>
+              <li>Let's say that are just things that can be observed, boxes where the data comes from, basically they are the observed part of the Observer pattern.</li>
+              <li>They are more than just data stream, but let's not enter into their complexity.</li>
+              <li>...</li>
+            </ul>
+            If you want a deep explanations see this article by Ben Lesh: <a href="https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87">Learning Observable By Building Observable</a>
+            <br>
+            <br>
+
+
+          </aside>
+        </section>
+
+
+
+<!--        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Marble diagrams</span>
+          </div>
+          <ul>
+            <li>Simple way to show data flow over time.</li>
+            <li>Data flow that emits 4 elements and then finishes.<img src="assets/images/marble_ok.png"></li>
+            <li>Data flow that emits 3 elements and then emits an error.<img src="assets/images/marble_error.png"></li>
+          </ul>
+          <aside class="notes">
+            Marble diagrams were designed to easily understand what is happening in a Observable. They are read from left to right, representing time. Each ball is a value emitted by the Observable. The vertical line indicates that the flow has ended, and the cross indicates that it has emitted an error. In both cases the flow is closed.
+            <br>
+            <br>
+            We ouse marble diagrams to show how a pipe of a part of a pipe is behaving.
+            <br>
+            <br>
+
+            [[[ More details about marble diagrams: <a href="https://medium.com/@jshvarts/read-marble-diagrams-like-a-pro-3d72934d3ef5">Understanding Marble Diagrams for Reactive Streams</a>.]]]
+            <br>
+            <br>
+            [[[ An interactive marble diagram: <a href="https://rxviz.com/examples">Mouse move example (access the page an click on "Mouse move" example)</a>. It even allows to visualize your own example.]]]
+            <br><br>
+            <strong>
+            And how we operate with data in the pipes?
+            </strong>
+          </aside>
+        </section>-->
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Operators</span>
+          </div>
+          <ul>
+            <li>They allow to chain streams.</li>
+            <li>They allow to transform the stream data.</li>
+            <li>They allow to modulate streams.</li>
+            <li>They can create streams.</li>
+            <li>They can combine streams</li>
+            <li>They output an observable</li>
+          </ul>
+          <aside class="notes">
+            The second fundamental part are the operators. They are used to chhain Observables becasue they read from an Observable and they output data as an Observable. They allow data to be transformed, in more or less complex ways, but it also they allow flows to be modulated (for example, preventing data from passing if it does not meet certain condition). They also serve to create Observables (for example, to create an Observable from an event of the DOM, so that when that event occurs the Observable emits the event).
+            <br>
+            <br>
+            <strong>Let's see a couple of examples.</strong>
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Operators</span>
+          </div>
+          <div>
+            <span>Filter operator, filters values that don't match the condition.</span>
+            <img src="assets/images/marble_filter.png">
+          </div>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Operators</span>
+          </div>
+          <div>
+            <span>Map operator, transforms stream data.</span>
+            <img src="assets/images/marble_map.png">
+          </div>
+          <aside class="notes">
+            See interactive marble diagrams to know how different operators work in <a href="http://rxmarbles.com/">RxJS Marbles</a>.
+            <br>
+            <br>
+            <strong>Let's see some code examples.</strong>
+          </aside>
+        </section>
+
+
+<!--        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Animated marble diagram</span>
+          </div>
+
+          <div>
+            <span>Example of <a href="http://reactivex.io/documentation/operators/debounce.html"><em>debounce</em> operator</span></a><br>
+            <span class="xxsmall">"Only emit an item from an Observable if a particular timespan has passed without it emitting another item"</span>
+            <img src="assets/images/marble_diagram_animated_deboundce.gif"></li>
+            <div class="xxsmall">Example taken from <a href="http://reactivex.io/">reactivex.io</a></div>
+          </div>
+          <aside class="notes">
+          </aside>
+        </section>
+-->
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background.jpg" class="fframe">
+          <div class="header">
+            <span>Code examples</span>
+            <video src="https://i.giphy.com/media/YQitE4YNQNahy/giphy.mp4" autoplay="" loop="" muted="" playsinline="" onerror="this.onerror=()=>{};this.src='https://i.giphy.com/YQitE4YNQNahy.mp4';">
+                <img src="https://i.giphy.com/YQitE4YNQNahy.gif " alt="">
+            </video>
+          </div>
+        </section>
+
+
+<!--        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background_no_drop.jpg" class="fframe">
+          <div class="header">
+            <span>Decathlon</span>
+          </div>
+          <div>
+            <img src="assets/images/decathlon.png">
+          </div>
+          <span>Button smasher!<span>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Button smasher</span>
+          </div>
+          <ul>
+            <li>Detect clicks in a row (double, triple, etc).</li>
+            <li>Time is counted from the first click.</li>
+          </ul>
+          <aside class="notes">
+            Let's do the part that detects when we're crushing the button.
+          </aside>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Button smasher</span>
+          </div>
+          <pre>
+            <code data-trim data-noescape>
+const { fromEvent } = Rx;
+const { map, buffer, filter, interval } = RxOperators;
+
+<span class="fragment">fromEvent(document, 'click').pipe(</span>
+<span class="fragment">    buffer(Rx.interval(660)),</span>
+<span class="fragment">    map(list => list.length),</span>
+<span class="fragment">    filter(x => x >= 2)
+);</span>
+</code>
+          </pre>
+          <div>
+            <span class="fragment">Let's check this n-click detector <a href="https://rxviz.com/">live</a>!</span>
+          </div>
+          <aside class="notes">
+            Let's check this live!
+          </aside>
+        </section>
+-->
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Request URL and instantiate</span>
+          </div>
+          <pre>
+            <code data-trim data-noescape>
+            <span class="fragment">fromEvent(button, 'click')</span>
+            <span class="fragment">.pipe(</span>
+              <span class="fragment">map(() => 'https://example.com/api/classification'),</span>
+              <span class="fragment">flatMap(url => http.get(url)),</span>
+              <span class="fragment">map(items => items.map(new MyItem(item)))
+            )</span>
+            <span class="fragment">.subscribe(instances => this.list = instances);</span>
+            </code>
+          </pre>
+          <div>
+           <img src="assets/images/camino_transformaciones_ejemplo_en.png">
+          </div>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <section>
+            <div class="header">
+              <span>Request URL and instantiate</span>
+            </div>
+            <span>Auto refresh</span>
+            <pre>
+              <code data-trim data-noescape>
+                <span class="fragment">var clickStream$ = fromEvent(button, 'click');</span>
+                <span class="fragment">of(true).pipe(</span>
+                <span class="fragment"><span>  merge(clickStream$),</span>
+                <span>  switchMap(() => interval(60000)),</span></span>
+                <span class="fragment">  merge(clickStream)</span>
+                <span class="fragment old">  map(() => 'https://example.com/api/classification'),
+                  flatMap(url => http.get(url)),
+                  map(items => items.map(new MyItem(item)))
+                )
+                .subscribe(instances => this.list = instances);</span>
+              </code>
+            </pre>
+            </section>
+            <section>
+              <div>
+                <img src="assets/images/camino_transformaciones_ejemplo_en_autorefresh-b.png">
+              </div>
+            </section>
+          </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <section>
+            <div class="header">
+              <span>Request URL and instantiate</span>
+            </div>
+            <span>Optional auto refresh </span>
+            <pre>
+              <code data-trim data-noescape>
+                <span class="old">var clickStream$ = fromEvent(button, 'click');
+                var refresh$ = of(true).pipe(
+                  merge(clickStream$),
+                  switchMap(() => interval(60000)),</span>
+                <span class="fragment">  filter(() => autorefresh),</span>
+                <span class="fragment old">  merge(clickStream)
+                  map(() => 'https://example.com/api/classification'),
+                  flatMap(url => http.get(url)),
+                  map(items => items.map(new MyItem(item)))
+                )
+                .subscribe(instances => this.list = instances);</span>
+              </code>
+            </pre>
+          </section>
+          <section>
+            <div>
+              <img src="assets/images/camino_transformaciones_ejemplo_en_autorefresh_optional-b.png">
+            </div>
+          </section>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <section>
+            <div class="header">
+              <span>Request URL and instantiate</span>
+            </div>
+            <span>Optional auto refresh and prevent nervous users</span>
+            <pre>
+              <code data-trim data-noescape>
+                <span class="fragment"><span class="old">var clickStream$ = fromEvent(button, 'click')</span><span>.pipe(
+                  throttleTime(15000)
+                );</span>
+                <span class="fragment old">var refresh$ = of(true).pipe(
+                  merge(clickStream$),
+                  switchMap(() => interval(60000)),
+                  filter(() => autorefresh),
+                  merge(clickStream)
+                  map(() => 'https://example.com/api/classification'),
+                  flatMap(url => http.get(url)),
+                  map(items => items.map(new MyItem(item)))
+                )
+                .subscribe(instances => this.list = instances);</span>
+              </code>
+            </pre>
+          </section>
+          <section>
+            <div>
+              <img src="assets/images/camino_transformaciones_ejemplo_en_autorefresh_optional_prevent-b.png">
+            </div>
+          </section>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <section>
+            <div class="header">
+              <span>Request URL and instantiate</span>
+            </div>
+            <span>Optional auto refresh, prevent nervous users and error management.</span>
+            <pre>
+              <code data-trim data-noescape>
+                <span class="fragment old">var clickStream$ = fromEvent(button, 'click').pipe(
+                    throttleTime(15000)
+                  );
+                var refresh$ = of(true).pipe(
+                  merge(clickStream$),
+                  switchMap(() => interval(60000)),
+                  filter(() => autorefresh),
+                  merge(clickStream)
+                  map(() => 'https://example.com/api/classification'),
+                  flatMap(url => http.get(url)),
+                  map(items => items.map(new MyItem(item)))
+                )</span>
+                <span class="fragment">.catch(err => of(this.list))</span>
+                <span class="fragment old">.subscribe(instances => this.list = instances);</span>
+              </code>
+            </pre>
+          </section>
+          <section>
+            <div>
+              <img src="assets/images/camino_transformaciones_ejemplo_en_autorefresh_optional_catch-b.png">
+            </div>
+          </section>
+        </section>
+
+
+        <section data-state="sponsor-hidden" data-background-image="assets/images/DCE2020_section_background.jpg" class="fframe">
+          <div class="header">
+            <span>Final notes</span>
+          </div>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Why Reactive Programming</span>
+          </div>
+         <ul>
+            <li>You can express from simple reactions to extremely complex reactions to change.</li>
+            <li>No more hells.</li>
+            <li>Observables <i>resolve</i> as many times as needed.</li>
+            <li>Execution flow is intuitive <sup>*</sup>.</li>
+            <li>It's lazy.</li>
+            <li>It's cancellable.</li>
+          </ul>
+
+          <aside class="notes">
+          <ul>
+            <li>Callbacks only express simple reactons.</Li>
+            <li>Reactive Programming is not about nesting code.</Li>
+            <li>Observables emit values, not just one.</Li>
+            <li>Just read the pipe! For complex pipes is not so obvious, but I bet it would be worse with promises. Of course you have to be used to operators.</Li>
+            <li>And could be not lazy</Li>
+            <li>Save your resources!</Li>
+          </ul>
+          </aside>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>When to use Reactive Programming?</span>
+          </div>
+          <ul>
+            <li>With many ashynchonous data sources.</li>
+            <li>Complex interactions.</li>
+            <li>Complex interdependency.</li>
+            <li>To avoid internal state to manage asynchronous events.</li>
+          </ul>
+          <aside class="notes">
+            <ul>
+              <li>Because with Reactive Programming is easier to manage many data sources.</li>
+              <li>Because it's easy to program complex interactions with Reactive Programing plumbing</li>
+              <li>Same as before: plumbing makes those things easy.</li>
+              <li>Reactive Programming can help to remove some internal states because that functionality is done by operators and Observables. Remember the button smasher example? Doing that with promises or callbacks would need some timers and keeping some internal state.</li>
+            </ul>
+            <br>
+            <br>
+          </aside>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Observables notes</span>
+          </div>
+          <ul>
+            <li>Can be asyncronous or synchronous.</li>
+            <li>Can be cold o hot.</li>
+            <li>Can be multicast o unicast.</li>
+            <li>Can share or not the data source with their subscribers.</li>
+          </ul>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Why to adopt?</span>
+          </div>
+
+            <div>
+              Because others have already done it.
+              <br>
+              <img src="assets/images/adopters.png">
+            </div>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Why to adopt?</span>
+          </div>
+          <ul>
+            <li>It can express very complex models.</li>
+            <li>It handles any data source.</li>
+            <li>Observables: proposed for standard, currently in stage 1.</li>
+            <li>Less code, improved maintanibility.</li>
+            <li>Available in many languages.</li>
+            <li>Asynchronicity.</li>
+          </ul>
+          <aside class="notes">
+            <strong>If you deal with asynchronicity you probably may beneficit using Reactive Programming. As an exmaple, I want to share my personal experience.</strong>
+          </aside>
+        </section>
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>WorldArchery App</span>
+          </div>
+          <img style="width: 200px" src="assets/images/WA_app_ranking.gif">
+
+          <aside class="notes">
+            <ul>
+              <li>This is the mobile app fo the World Archery Federation, one of our clients.</li>
+              <li>You see three dropdowns, each is dependant on previous: if you change, the next dropdowns change.</li>
+              <li>Data is not just retrieved from and endpoint, we need some previous data to render dropdowns (identifiers, labels, etc), so we have dependant data. You could argue that API should be simpler to use and I would agree, but it wasn't the case and we had to stick to already existent API.</li>
+              <li>Data is refreshed, sometimes very often. While this view is pretty static, the underlaying library that access API is prepared to refresh data automatically and on demand. This would affect the displayed data. <br>App should work offline, so library builds a local data repository with the fetched data, requesting fresh data when it's outdated.</li>
+              <li>This resulted in a pretty asynchronous hell. We worked on this with AngularJS without reactive programming: we lost some mental health those days. Then we did it again with Angular using Reactive Programming, and although it was hard because we had to learn how to use it, the asynchronous hell just became a complex but funny problem to solve.</li>
+            </ul>
+            <br>
+            <br>
+            Get the application for <a href="https://play.google.com/store/apps/details?id=org.worldarchery.live">Android</a> or <a href="https://itunes.apple.com/us/app/world-archery/id825608776">iOS</a>.
+          </aside>
+        </section>
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Links</span>
+          </div>
+          <ul>
+            <li>The introduction to Reactive Programming you've been missing: https://gist.github.com/staltz/868e7e9bc2a7b8c1f754</li>
+            <li>Interactive marble diagrams: http://rxmarbles.com/</li>
+            <li>Rx Visualizer: https://rxviz.com/</li>
+            <li>ReactiveX: http://reactivex.io/</li>
+          </ul>
+        </section>
+
+
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header">
+            <span>Questions?</span>
+          </div>
+        </section>
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="alt-color">
+            <div>Join us for</div>
+            <div>contribution opportunities</div>
+
+          </div>
+          <div>
+            <span class="xsmall alt-color2">Friday, December 11, 2020 </span>
+          </div>
+          <div class="spacer-small"></div>
+          <div class='some-page-wrapper'>
+            <div class="row xsmall alt-color2">
+              <div class="column">
+                <div>
+                  Mentored
+                  <br/>
+                  Contribution
+                </div>
+              </div>
+              <div class="column">
+                <div>
+                  First Time
+                  <br/>
+                  Contributor Workshop
+                </div>
+              </div>
+              <div class="column">
+                <div>
+                  General
+                  <br/>
+                  Contribution
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="spacer-small"></div>
+          <div class="spacer"></div>
+          <div class="alt-color">
+            <div>#DrupalContributions</div>
+            <div></div>
+          </div>
+
+
+        </section>
+
+        <section data-background-image="assets/images/DCE2020_general_background.png">
+          <div class="header alt-color">
+            <span>What did you think?</span>
+          </div>
+          <div class="spacer"></div>
+          <div>
+            <span class="small">Locate this session at the DrupalCon Europe website:</span>
+            <a class="small alt-color" href="https://events.drupal.org/europe2020/preliminary-program/">https://events.drupal.org/europe2020/preliminary-program/</a>
+          </div>
+          <div class="bottom">
+            <img class="logo" src="assets/images/DCE2020_thanks.png"/>
+          </div>
+
+        </section>
+
+      </div>
+
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+        showNotes: false,
+        slideNumber: false,
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+      });
+    </script>
+  </body>
+</html>
